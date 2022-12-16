@@ -1,4 +1,4 @@
-﻿Imports System
+Imports System
 Imports System.Globalization
 Imports System.Windows
 Imports System.Windows.Data
@@ -8,59 +8,57 @@ Imports DevExpress.Xpf.Scheduler
 Imports DevExpress.XtraScheduler
 
 Namespace SchedulerCustomizeResourcesControlsWpf
-	Partial Public Class MainWindow
-		Inherits Window
 
-		Public Sub New()
-			InitializeComponent()
+    Public Partial Class MainWindow
+        Inherits Window
 
-			GenerateResources()
-		End Sub
+        Public Sub New()
+            Me.InitializeComponent()
+            GenerateResources()
+        End Sub
 
-		Private Sub GenerateResources()
-			scheduler.Storage.ResourceStorage.BeginUpdate()
-			For i As Integer = 0 To 4
-				Dim resource As Resource = scheduler.Storage.CreateResource(i)
-				resource.Caption = "Resource" & i
-				scheduler.Storage.ResourceStorage.Add(resource)
-			Next i
-			scheduler.Storage.ResourceStorage(1).SetColor(System.Windows.Media.Colors.Blue)
-			scheduler.Storage.ResourceStorage.EndUpdate()
-		End Sub
-	End Class
+        Private Sub GenerateResources()
+            Me.scheduler.Storage.ResourceStorage.BeginUpdate()
+            For i As Integer = 0 To 5 - 1
+                Dim resource As Resource = Me.scheduler.Storage.CreateResource(i)
+                resource.Caption = "Resource" & i
+                Me.scheduler.Storage.ResourceStorage.Add(resource)
+            Next
 
-	Public Class ResourceColorConverter
-		Inherits MarkupExtension
-		Implements IValueConverter
+            Me.scheduler.Storage.ResourceStorage(1).SetColor(Colors.Blue)
+            Me.scheduler.Storage.ResourceStorage.EndUpdate()
+        End Sub
+    End Class
 
-		Private Shared instance As New ResourceColorConverter()
-		Public Overrides Function ProvideValue(ByVal serviceProvider As IServiceProvider) As Object
-			Return instance
-		End Function
+    Public Class ResourceColorConverter
+        Inherits MarkupExtension
+        Implements IValueConverter
 
-		#Region "IValueConverter Members"
+        Private Shared instance As ResourceColorConverter = New ResourceColorConverter()
 
-		Public Function Convert(ByVal value As Object, ByVal targetType As Type, ByVal parameter As Object, ByVal culture As CultureInfo) As Object Implements IValueConverter.Convert
-			Dim resource As Resource = DirectCast(value, Resource)
-			Dim color As System.Windows.Media.Color = resource.GetColor()
-			Dim emptyColor As New System.Windows.Media.Color()
-			If color = emptyColor Then
-				Dim scheduler As SchedulerControl = DirectCast(Application.Current.MainWindow.FindName("scheduler"), SchedulerControl)
-				Dim colorSchemas As SchedulerColorSchemaCollection = scheduler.GetResourceColorSchemasCopy()
-				Dim resIndex As Integer = scheduler.Storage.ResourceStorage.Items.IndexOf(resource)
+        Public Overrides Function ProvideValue(ByVal serviceProvider As IServiceProvider) As Object
+            Return instance
+        End Function
 
-				color = colorSchemas(resIndex Mod colorSchemas.Count).Cell
-			End If
+'#Region "IValueConverter Members"
+        Public Function Convert(ByVal value As Object, ByVal targetType As Type, ByVal parameter As Object, ByVal culture As CultureInfo) As Object Implements IValueConverter.Convert
+            Dim resource As Resource = CType(value, Resource)
+            Dim color As Color = resource.GetColor()
+            Dim emptyColor As Color = New Color()
+            If color = emptyColor Then
+                Dim scheduler As SchedulerControl = CType(Application.Current.MainWindow.FindName("scheduler"), SchedulerControl)
+                Dim colorSchemas As SchedulerColorSchemaCollection = scheduler.GetResourceColorSchemasCopy()
+                Dim resIndex As Integer = scheduler.Storage.ResourceStorage.Items.IndexOf(resource)
+                color = colorSchemas(resIndex Mod colorSchemas.Count).Cell
+            End If
 
-			Dim brush As New SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B))
+            Dim brush As SolidColorBrush = New SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B))
+            Return brush
+        End Function
 
-			Return brush
-		End Function
-
-		Public Function ConvertBack(ByVal value As Object, ByVal targetType As Type, ByVal parameter As Object, ByVal culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
-			Throw New NotImplementedException()
-		End Function
-
-		#End Region
-	End Class
+        Public Function ConvertBack(ByVal value As Object, ByVal targetType As Type, ByVal parameter As Object, ByVal culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+            Throw New NotImplementedException()
+        End Function
+'#End Region
+    End Class
 End Namespace
